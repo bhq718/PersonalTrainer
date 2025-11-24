@@ -6,6 +6,7 @@ import  Button  from '@mui/material/Button';
 import type { Customer } from '../types';
 import { getCustomers, deleteCustomer } from '../customerapi';
 import EditCustomer from './EditCustomer';
+import AddCustomer from './AddCustomer';
 
 function Customerlist() {
     const [customers, setCustomers] = useState<Customer[]>([]);
@@ -61,6 +62,7 @@ function Customerlist() {
 
     return (
         <>
+        <AddCustomer fetchCustomers={fetchCustomers} />
            <div style ={{width: '90%', height: 500, margin: 'auto'}}>
             <DataGrid
                 rows={customers}
