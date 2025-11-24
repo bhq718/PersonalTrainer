@@ -1,5 +1,4 @@
 export type Customer = {
-
   firstname: string;
   lastname: string;
   streetaddress: string;
@@ -20,4 +19,4 @@ export type Customer = {
   }
 }
 
-export type CustomerForm =Omit<Customer, '_links'>;
+export type CustomerForm =Omit<Customer, "_links">;
