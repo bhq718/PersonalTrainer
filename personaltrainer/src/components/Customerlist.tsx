@@ -3,14 +3,14 @@ import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef } from '@mui/x-data-grid';
 //import  Button  from '@mui/material/Button';
 
-import type {Customer} from '../types';
+import type { Customer } from '../types';
 import { getCustomers } from '../customerapi';
 
 function Customerlist() {
     const [customer, setCustomers] = useState<Customer[]>([]);
 
     useEffect(() => {
-        fecthCustomers();
+        fetchCustomers();
     }, []);
 
     const fetchCustomers = () => {
