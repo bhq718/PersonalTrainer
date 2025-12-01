@@ -20,3 +20,22 @@ export type Customer = {
 }
 
 export type CustomerForm =Omit<Customer, "_links">;
+
+export type Training = {
+  date: string;
+  duration: number;
+  activity: string;
+  _links: {
+    self: {
+      href: string;
+    },
+    training: {
+      href: string;
+    },
+    customer: {
+      href: string;
+    }
+  }
+}
+
+export type TrainingForm = Omit<Training, "_links">;
