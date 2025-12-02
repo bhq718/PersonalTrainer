@@ -1,68 +1,61 @@
-/* eslint-disable react-hooks/immutability */
-import { useState, useEffect } from 'react';
+import {  useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import Button from '@mui/material/Button';
+import dayjs from 'dayjs'
+import { useOutletContext } from "react-router";
 
-import type { Training} from '../types';
-import { getTrainings, deleteTraining } from '../trainingsapi';
-import EditTraining from './EditTraining';
-import AddTraining from './AddTraining';
+import type { OutletContextType} from '../types';
+
+
 
 function Traininglist() {
 
-    const [trainings, setTrainings] = useState<Training[]>([]);
+const { trainings, fetchTrainings, deleteTraining } = useOutletContext<OutletContextType>();
 
-   useEffect(() => {
-        fetchTrainings();
-    }, []);
+  useEffect(() => {
+    fetchTrainings();
+  }, [fetchTrainings]);
 
-    const fetchTrainings = () => {
-        getTrainings()
-            .then(data => setTrainings(data._embedded.trainings))
-            .catch(err => console.error(err));
-    }
 
-    const handleDelete = (url: string) => {
-        if (window.confirm('Are you sure you want to delete this training?')) {
-            deleteTraining(url)
-                .then(() => fetchTrainings())
-                .catch(err => console.error(err));
-        }
-    }
-
-    const columns: GridColDef[] = [
-        { field: 'date', headerName: 'Date', width: 150 },
-        { field: 'duration', headerName: 'Duration (min)', width: 150 },
-        { field: 'activity', headerName: 'Activity', width: 150 },
-        {
+  const formattedTrainings = (trainings ?? []).map(training => ({
+    ...training,
+    formattedDate: training.date ? dayjs(training.date).format('DD.MM.YYYY HH:mm') : '',
+    customerName: (training as any).customerName ?? ''
+  }));
+ 
+  
+ 
+  const columns: GridColDef[] = [
+    { field: 'formattedDate', headerName: 'Date', width: 200 },
+    { field: 'activity', headerName: 'Activity', width: 200 },
+    { field: 'duration', headerName: 'Duration (min)', width: 150 },
+    { field: 'customerName', headerName: 'Customer', width: 200 },
+           {
             field: '_links.self.href',
-            headerName: 'Actions', sortable: false, width: 100, filterable: false, hideable: false,
+            headerName: 'Delete',
+            sortable: false,
+            width: 100,
+            filterable: false,
+            hideable: false,
             renderCell: (params: GridRenderCellParams) =>
-                <Button color="error" size="small" onClick={() => handleDelete(params.id as string)}>
+                <Button color="error" size="small" onClick={() => deleteTraining(params.row?._links?.self?.href ?? (params.id as string))}>
                     Delete
                 </Button>
         },
-          {
-                    field: '_links.trainings.href',
-                    headerName: 'Actions', sortable: false, width: 100, filterable: false, hideable: false,
-                    renderCell: (params: GridRenderCellParams) =>
-                        <EditTraining fetchTrainings={fetchTrainings} trainingRow={params.row} />
-                }
-    ]
-
+  ];
+ 
     return (
         <>
-            <AddTraining fetchTrainings={fetchTrainings} />
-        <div style={{ height: 400, width: '100%' }}>
-            <DataGrid
-                rows={trainings}
-                columns={columns}
-                getRowId={(row) => row._links.trainings.href}
-                autoPageSize
-                 rowSelection={false}
-            />
-        </div>
+      <div style={{ height: 600, width: '95%', margin: 'auto', marginTop: 20 }}>
+      <DataGrid
+        rows={formattedTrainings}
+        columns={columns}
+        getRowId={row => row._links?.self?.href ?? (row as any).id}
+        autoPageSize
+        disableRowSelectionOnClick
+      />
+    </div>
         </>
     );
 

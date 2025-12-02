@@ -4,10 +4,14 @@ import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import Button from '@mui/material/Button';
 
-import type { Customer } from '../types';
+
+import { useOutletContext } from "react-router";
+
+import type { Customer, OutletContextType } from '../types';
 import { getCustomers, deleteCustomer } from '../customerapi';
 import EditCustomer from './EditCustomer';
 import AddCustomer from './AddCustomer';
+import AddTrainings from './AddTraining';
 
 function Customerlist() {
 
@@ -16,6 +20,8 @@ function Customerlist() {
    useEffect(() => {
         fetchCustomers();
     }, []);
+
+    const { addTraining} = useOutletContext<OutletContextType>();
 
     const fetchCustomers = () => {
         getCustomers()
@@ -39,6 +45,7 @@ function Customerlist() {
         { field: 'city', headerName: 'City', width: 100 },
         { field: 'email', headerName: 'Email', width: 100 },
         { field: 'phone', headerName: 'Phone', width: 100 },
+      
         {
             field: '_links.self.href',
             headerName: 'Actions', sortable: false, width: 100, filterable: false, hideable: false,
@@ -52,7 +59,18 @@ function Customerlist() {
             headerName: 'Actions', sortable: false, width: 100, filterable: false, hideable: false,
             renderCell: (params: GridRenderCellParams) =>
                 <EditCustomer fetchCustomers={fetchCustomers} customerRow={params.row} />
-        }
+        },
+{
+  field: '_links.trainings.href',
+  headerName: 'Trainings',
+  width: 150,
+  renderCell: (params: GridRenderCellParams) =>
+    <AddTrainings
+      customerHref={params.row._links.customer.href}
+      onSaved={fetchCustomers}
+      addTraining={addTraining}
+    />
+}
     ]
 
     return (

@@ -1,94 +1,73 @@
 import { useState } from 'react';
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
 import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-//import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import TextField from '@mui/material/TextField';
 
-import type { TrainingForm } from '../types';
 import { saveTraining } from '../trainingsapi';
 
+type Props = {
+  customerHref: string;
+  onSaved?: () => void;
+  addTraining?: (training: any) => Promise<any>; // tehty valinnaiseksi
+};
 
-type AddTrainingProps = {
-    fetchTrainings: () => void;
-}
+export default function AddTrainings({ customerHref, onSaved, addTraining }: Props) {
+  const [open, setOpen] = useState(false);
+  const [date, setDate] = useState('');
+  const [activity, setActivity] = useState('');
+  const [duration, setDuration] = useState('');
+  const [saving, setSaving] = useState(false);
 
-export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
-    const [open, setOpen] = useState(false);
-    const [training, setTraining] = useState<TrainingForm>({
-        date: '',
-        duration: 0,
-        activity: '',
-    });
+  const openDialog = () => setOpen(true);
+  const closeDialog = () => setOpen(false);
 
-    const handleClickOpen = () => {
-        setOpen(true);
+
+const submit = async () => {
+    const dur = Number(duration);
+    if (Number.isNaN(dur)) { alert('Use numbers only'); return; }
+    if (!date || !activity || !duration) { alert('Please fill all the fields'); return; }
+
+    const training = {
+      date: new Date(date).toISOString(),
+      activity,
+      duration: dur,
+      customer: customerHref
     };
-    const handleClose = () => {
-        setOpen(false);
-        setTraining({
-            date: '',
-            duration: 0,
-            activity: '',
-        });
-    };
 
-    const handleSave = () => {
-        if(!training.date || !training.duration || !training.activity ) {
-            alert("Please fill all fields");
-            return;
-        }
-        saveTraining(training)
-        .then(() => {
-            fetchTrainings();
-            handleClose();
-        })
-        .catch(err => console.error(err));
+    try {
+      setSaving(true);
+      const saveFn = addTraining ?? saveTraining; // käytä propia tai suoraa API-funktiota
+      await saveFn(training);
+      alert('New training added successfully');
+      onSaved?.();
+      closeDialog();
+    } catch (err: any) {
+      console.error('Add training error:', err);
+      alert('Adding new training failed ' + (err?.message ?? String(err)));
+    } finally {
+      setSaving(false);
     }
+  };
+  
 
-    return (
-        <>
-            <Button variant="outlined" onClick={handleClickOpen} style={{ marginBottom: '10px' }}>
-                Add Training
-            </Button>
-            <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>Add Training</DialogTitle>
-                <DialogContent>
-                    <TextField
-                    required
-                    margin="dense"
-                    label="Date"
-                    value={training.date}
-                    onChange={event => setTraining({...training, date: event.target.value})}
-                    fullWidth
-                    variant="standard"
-                    />
-                    <TextField
-                    required
-                    margin="dense"
-                    label="Duration (min)"
-                    value={training.duration}
-                    onChange={event => setTraining({...training, duration: Number(event.target.value)})}
-                    fullWidth
-                    variant="standard"
-                    />
-                    <TextField
-                    required
-                    margin="dense"
-                    label="Activity"
-                    value={training.activity}
-                    onChange={event => setTraining({...training, activity: event.target.value})}
-                    fullWidth
-                    variant="standard"
-                    />
-                      </DialogContent>
+  return (
+    <>
+      <Button variant="outlined" size="small" onClick={openDialog}>Add Training</Button>
+      <Dialog open={open} onClose={closeDialog}>
+        <DialogTitle>Lisää harjoitus</DialogTitle>
+        <DialogContent>
+          <TextField label="Päivämäärä ja aika" type="datetime-local" fullWidth value={date} onChange={e=>setDate(e.target.value)} InputLabelProps={{ shrink: true }} />
+          <TextField label="Activity" fullWidth value={activity} onChange={e=>setActivity(e.target.value)} />
+          <TextField label="Kesto (min)" type="number" fullWidth value={duration} onChange={e=>setDuration(e.target.value)} />
+        </DialogContent>
         <DialogActions>
-            <Button onClick={handleClose}>Cancel</Button>
-            <Button onClick={handleSave}>Save</Button>
+          <Button onClick={closeDialog}>Peruuta</Button>
+          <Button onClick={submit} variant="contained" disabled={saving}>Tallenna</Button>
         </DialogActions>
-        </Dialog>
-        </>
-    );
+      </Dialog>
+    </>
+  );
 }
