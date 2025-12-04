@@ -11,7 +11,7 @@ import { saveTraining } from '../trainingsapi';
 type Props = {
   customerHref: string;
   onSaved?: () => void;
-  addTraining?: (training: any) => Promise<any>; // tehty valinnaiseksi
+  addTraining?: (training: any) => Promise<any>; 
 };
 
 export default function AddTrainings({ customerHref, onSaved, addTraining }: Props) {
@@ -30,12 +30,12 @@ const submit = async () => {
     if (Number.isNaN(dur)) { alert('Use numbers only'); return; }
     if (!date || !activity || !duration) { alert('Please fill all the fields'); return; }
 
-    const training = {
-      date: new Date(date).toISOString(),
-      activity,
-      duration: dur,
-      customer: customerHref
-    };
+const training = {
+  date: new Date(date).toISOString(), // Päivämäärä ISO-muodossa
+  activity,
+  duration: dur,
+  customer: customerHref // Asiakkaan URL
+};
 
     try {
       setSaving(true);
@@ -57,11 +57,11 @@ const submit = async () => {
     <>
       <Button variant="outlined" size="small" onClick={openDialog}>Add Training</Button>
       <Dialog open={open} onClose={closeDialog}>
-        <DialogTitle>Lisää harjoitus</DialogTitle>
+        <DialogTitle>Add new training</DialogTitle>
         <DialogContent>
-          <TextField label="Päivämäärä ja aika" type="datetime-local" fullWidth value={date} onChange={e=>setDate(e.target.value)} InputLabelProps={{ shrink: true }} />
+          <TextField label="Date and time" type="datetime-local" fullWidth value={date} onChange={e=>setDate(e.target.value)}  />
           <TextField label="Activity" fullWidth value={activity} onChange={e=>setActivity(e.target.value)} />
-          <TextField label="Kesto (min)" type="number" fullWidth value={duration} onChange={e=>setDuration(e.target.value)} />
+          <TextField label="Duration (min)" type="number" fullWidth value={duration} onChange={e=>setDuration(e.target.value)} />
         </DialogContent>
         <DialogActions>
           <Button onClick={closeDialog}>Peruuta</Button>

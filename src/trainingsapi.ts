@@ -10,14 +10,14 @@ export function getTrainings() {
         })
 }
 
-export function deleteTraining(url: string) {
-    return fetch(url, { method: 'DELETE' })
-    .then(response => {
-        if (!response.ok)
-            throw new Error("Error when deleting training: " + response.statusText);
-        response.json();
-    })
-}
+export const deleteTraining = async (id: number) => {
+    const response = await fetch(`https://customer-rest-service-frontend-personaltrainer.2.rahtiapp.fi/api/trainings/${id}`, {
+        method: 'DELETE',
+    });
+    if (!response.ok) {
+        throw new Error("Error deleting training: " + response.statusText);
+    }
+};
 
 export function saveTraining(newTraining: TrainingForm) {
     return fetch(import.meta.env.VITE_API_URL + 'trainings', {

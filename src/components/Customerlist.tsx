@@ -4,10 +4,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import Button from '@mui/material/Button';
 
-
-import { useOutletContext } from "react-router";
-
-import type { Customer, OutletContextType } from '../types';
+import type { Customer } from '../types';
 import { getCustomers, deleteCustomer } from '../customerapi';
 import EditCustomer from './EditCustomer';
 import AddCustomer from './AddCustomer';
@@ -21,7 +18,9 @@ function Customerlist() {
         fetchCustomers();
     }, []);
 
-    const { addTraining} = useOutletContext<OutletContextType>();
+
+
+    
 
     const fetchCustomers = () => {
         getCustomers()
@@ -67,8 +66,7 @@ function Customerlist() {
   renderCell: (params: GridRenderCellParams) =>
     <AddTrainings
       customerHref={params.row._links.customer.href}
-      onSaved={fetchCustomers}
-      addTraining={addTraining}
+      onSaved={fetchCustomers} // Käytä fetchCustomers-funktiota
     />
 }
     ]

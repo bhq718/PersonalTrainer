@@ -1,64 +1,77 @@
-import {  useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import Button from '@mui/material/Button';
-import dayjs from 'dayjs'
-import { useOutletContext } from "react-router";
-
-import type { OutletContextType} from '../types';
-
-
+import dayjs from 'dayjs';
+import type { Training } from '../types';
+import { deleteTraining } from "../trainingsapi";
 
 function Traininglist() {
+    const [trainings, setTrainings] = useState<Training[]>([]);
 
-const { trainings, fetchTrainings, deleteTraining } = useOutletContext<OutletContextType>();
+    const fetchTrainings = async () => {
+        try {
+            const response = await fetch('https://customer-rest-service-frontend-personaltrainer.2.rahtiapp.fi/api/gettrainings');
+            if (!response.ok) {
+                throw new Error("Error fetching trainings: " + response.statusText);
+            }
+            const data = await response.json();
+            const formattedData = data.map((training: any) => ({
+                ...training,
+                formattedDate: dayjs(training.date).format('DD.MM.YYYY HH:mm'),
+                customerName: `${training.customer?.firstname ?? ''} ${training.customer?.lastname ?? ''}`.trim(),
+            }));
+            setTrainings(formattedData);
+        } catch (error) {
+            console.error("Error fetching trainings:", error);
+        }
+    };
 
-  useEffect(() => {
-    fetchTrainings();
-  }, [fetchTrainings]);
+    useEffect(() => {
+        fetchTrainings();
+    }, []);
 
+const handleDelete = async (id: number) => {
+    try {
+        await deleteTraining(id); // Poista treeni ID:n perusteella
+        setTrainings(prev => prev.filter(training => training.id !== id)); // Suodata poistettu treeni pois
+    } catch (error) {
+        console.error("Error deleting training:", error);
+    }
+};
 
-  const formattedTrainings = (trainings ?? []).map(training => ({
-    ...training,
-    formattedDate: training.date ? dayjs(training.date).format('DD.MM.YYYY HH:mm') : '',
-    customerName: (training as any).customerName ?? ''
-  }));
- 
-  
- 
-  const columns: GridColDef[] = [
+const columns: GridColDef[] = [
     { field: 'formattedDate', headerName: 'Date', width: 200 },
     { field: 'activity', headerName: 'Activity', width: 200 },
     { field: 'duration', headerName: 'Duration (min)', width: 150 },
     { field: 'customerName', headerName: 'Customer', width: 200 },
-           {
-            field: '_links.self.href',
-            headerName: 'Delete',
-            sortable: false,
-            width: 100,
-            filterable: false,
-            hideable: false,
-            renderCell: (params: GridRenderCellParams) =>
-                <Button color="error" size="small" onClick={() => deleteTraining(params.row?._links?.self?.href ?? (params.id as string))}>
-                    Delete
-                </Button>
-        },
-  ];
- 
-    return (
-        <>
-      <div style={{ height: 600, width: '95%', margin: 'auto', marginTop: 20 }}>
-      <DataGrid
-        rows={formattedTrainings}
-        columns={columns}
-        getRowId={row => row._links?.self?.href ?? (row as any).id}
-        autoPageSize
-        disableRowSelectionOnClick
-      />
-    </div>
-        </>
-    );
+    {
+        field: 'id',
+        headerName: 'Delete',
+        sortable: false,
+        width: 100,
+        filterable: false,
+        hideable: false,
+        renderCell: (params: GridRenderCellParams) =>
+            <Button color="error" size="small" onClick={() => handleDelete(params.row.id)}>
+                Delete
+            </Button>
+    },
+];
 
+return (
+  <>
+  <div style={{ height: 600, width: '95%', margin: 'auto', marginTop: 20 }}>
+  <DataGrid
+  rows={trainings}
+  columns={columns}
+  getRowId={(row) => row.id} // Käytä `id` rivin yksilöimiseen
+  autoPageSize
+  disableRowSelectionOnClick
+  />
+  </div>
+  </>
+  );
 }
 
 export default Traininglist;

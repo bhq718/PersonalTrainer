@@ -5,7 +5,6 @@ import { createBrowserRouter , RouterProvider } from 'react-router';
 
 import Customerlist from './components/Customerlist.tsx';
 import Trainingslist from './components/Trainingslist.tsx';
-import Statistics from './Statistics.tsx'; 
 
 const router = createBrowserRouter([  // Import components that are used in routes
   {
@@ -19,10 +18,6 @@ const router = createBrowserRouter([  // Import components that are used in rout
       {
         path: "/trainings",                // path can be defined relative to the parent path
         element: <Trainingslist />,
-      },
-      {
-        path: "/statistics",
-        element: <Statistics />,
       },
     ]
   }

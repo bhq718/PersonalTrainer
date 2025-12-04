@@ -39,10 +39,3 @@ export type Training = {
 }
 
 export type TrainingForm = Omit<Training, "_links"> & { customer: string };
-
-export type OutletContextType = {
-  trainings: Training[];
-  addTraining: (newTraining: TrainingForm) => Promise<void>;
-  deleteTraining: (id: string) => Promise<void>;
-  fetchTrainings: () => Promise<void>; // <--- lisätty
-};
